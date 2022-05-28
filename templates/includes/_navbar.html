@@ -1,0 +1,29 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-info">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/home"><h4>Home</h4></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% if session.logged_in %}
+        <li class="nav-item">
+          <a class="nav-link" href="/ewaste"><h4>E-waste</h4></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/plastic"><h4>Plastic</h4></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/cloth"><h4>Cloth</h4></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/foodwaste"><h4>Food</h4></a>
+        </li>
+      </ul>
+      <ul class="nav-item">
+        <a class="btn btn-secondary" href="/">Logout</a>
+      </ul>
+      {% endif %}
+    </div>
+  </div>
+</nav>
