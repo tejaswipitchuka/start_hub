@@ -1,8 +1,8 @@
 from email.headerregistry import Address
 from logging import error
 from msilib.schema import File
-from pydoc import Doc
-from tkinter import PhotoImage
+from pydoc import Doc, describe
+from turtle import title
 from flask import Flask, render_template,flash,redirect,url_for,session,logging,request
 
 from flask_mysqldb import MySQL
@@ -18,16 +18,39 @@ app=Flask(__name__)
 app.config['MYSQL_HOST']='localhost'
 app.config['MYSQL_USER']='root'
 app.config['MYSQL_PASSWORD']=''
-app.config['MYSQL_DB']='waste_management'
+app.config['MYSQL_DB']='start_hub'
 app.config['MYSQL_CURSORCLASS']='DictCursor'
 
 #init MySQL
 mysql=MySQL(app)
 
 
-@app.route('/')
+
 def index():
     return render_template('index.html')
+
+@app.route('/idea_post',methods=['POST','GET'])
+def ideaPost():
+    print(request.form)
+    form=IdeaPostForm(request.form)
+    if request.method=='POST':
+        title=form.title.data
+        subtitle=dict(request.form)['subtitle']
+        description=dict(request.form)['description']
+        #create cursor
+        cur=mysql.connection.cursor()
+        #execute
+        cur.execute("INSERT INTO idea_post(title,subtitle,description) VALUES(%s,%s,%s)",(title,subtitle,description))
+        print("inserted into idea_post")
+        #commit to DB
+        mysql.connection.commit()
+        #close connection
+        cur.close()
+        flash('Your request has been submitted','success')
+    else:
+        flash('Please fill the form correctly','danger')
+    return render_template('idea_post.html')
+
 
 @app.route('/ewaste')
 def ewaste():
@@ -37,15 +60,10 @@ def ewaste():
 def clothe():
     return render_template('cloth.html')
 
-class clothPickupForm(Form):
-    address=StringField("address",[validators.Length(min=1,max=200)])
-    city=StringField("city",[validators.Length(min=1,max=200)])
-    state=StringField("state",[validators.Length(min=1,max=200)])
-    pincode=StringField("pincode",[validators.Length(min=1,max=200)])
-    phone=StringField("phone",[validators.Length(min=1,max=200)])
-    items=StringField("items",[validators.Length(min=1,max=200)])
-    quantity=StringField("quantity",[validators.Length(min=1,max=200)])
-    quality=StringField("quality",[validators.Length(min=1,max=200)])
+class IdeaPostForm(Form):
+    title=StringField("title",[validators.Length(min=1)])
+    subtitle=StringField("subtitle",[validators.Length(min=1)])
+    description=StringField("description",[validators.Length(min=1)])
 
 
 @app.route('/clothpickup',methods=['POST','GET'])#clothpickup.html
@@ -75,7 +93,7 @@ def clothpickup():
     else:
         flash('Please fill the form correctly','danger')   
     # return render_template('clothpickup.html',form=form)
-    return render_template('clothpickup.html')
+    return render_template('idea_post.html')
     
 @app.route('/clothLocations',methods=['GET','POST'])
 def clothLocations():
@@ -124,19 +142,6 @@ def plasticpickup():
 @app.route('/alternatives')
 def alternatives():
     return render_template('alternatives.html')
-
-@app.route('/rvmgmap')
-def rvm():
-    return render_template('rvmgmap.html')
-class PlasticPickUp(Form):
-    #photo =FileField('Photo')
-    phoneno=StringField('Items',[validators.Length(min=10,max=10)])
-    items=SelectField('Phone No',choices=['Rice','Roti','Curry','Tiffins','Dal','Curd'])
-    quantity=StringField('Quantity')
-    address=StringField('Address',[validators.Length(min=1,max=70)])
-    state=StringField('State',[validators.Length(min=5,max=15)])
-    city=StringField('City',[validators.Length(max=15)])
-    pincode=StringField('Pincode',[validators.Length(max=6)])
 
 @app.route('/plasticpickup',methods=['GET','POST'])
 def plasticpickupform():
