@@ -14,22 +14,20 @@
         <div class="container-fluid h-custom">
           <div class="row d-flex justify-content-center align-items-center h-100">
             <div class="col-md-9 col-lg-6 col-xl-5">
-              <img src="../static/wmimg.jpg"
+              <img src="../static/register1.png"
                 class="img-fluid" alt="Sample image">
             </div>
             <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
               <form method="post">
-                <h2>Register</h2><br>
-                <!-- Email input -->
-                <div class="col-md-12">
-                  <label class="form-label">Email Address</label>
-                  <input type="email" name="username" class="form-control" placeholder="Enter a valid Email Address">
-                </div>
-                <br>
-                <!-- Password input -->
-                <div class="col-md-12">
-                  <label class="form-label">Password</label>
-                  <input type="password" name="password" class="form-control" placeholder="Enter Password">
+                <h2>Choose your role</h2><br>
+                <div class="col-md-4">
+                  <label for="inputState" class="form-label">Role</label>
+                  <select id="inputState" name="state" class="form-select" aria-placeholder="FGFDGFDGFGFD">
+                      <option value="innovator">Innovator</option>
+                      <option value="investor">Investor</option>
+                      <option value="mentor">Mentor</option>
+                      <option value="organization">Organization</option>
+                  </select>
                 </div>
                 <div class="text-center text-lg-start mt-4 pt-2">
                   <button type="submit" class="btn btn-primary btn-lg"
@@ -43,3 +41,9 @@
       </section>
 </body>
 </html>
+
+
+
+
+
+
