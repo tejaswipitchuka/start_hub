@@ -60,47 +60,126 @@ class RegisterRole(Form):
     role=StringField('role')
 
 #user registration
-@app.route('/register1',methods=['GET','POST'])
+@app.route('/register',methods=['GET','POST'])
 def register():
     form=RegisterRole(request.form)
     if request.method=='POST':
         role=dict(request.form)['role']
-        role_url='register'+role+'.html'
+        role_url='register'+role
         print(role_url)
-        return render_template(role_url)
-    return render_template('register1.html',form=form)
+        return redirect(role_url)
+    return render_template('register.html',form=form)
 
-#user registration
+class InnovatorRegister(Form):
+    firstname=StringField("firstname",[validators.Length(min=1,max=200)])
+    lastname=StringField("lastname",[validators.Length(min=1,max=10)])
+    email=StringField("email",[validators.Length(min=1,max=200)])
+    qualification=StringField("qualification",[validators.Length(min=1,max=200)])
+    mobileno=StringField("mobileno",[validators.Length(min=1,max=200)])
+    linkedin=StringField("linkedin",[validators.Length(min=1,max=200)])
+    password=PasswordField("password",[validators.DataRequired(),validators.Length(min=1,max=200)])
+
 @app.route('/registerinnovator',methods=['GET','POST'])
-def registerInnovator():
-    print(request.method,'register def')
-    form=RegisterRole(request.form)
+def innovatorRegister():
+    form=InnovatorRegister(request.form)
     if request.method=='POST':
-        print('hello')
-        username=request.form['username']
-        password = sha256_crypt.encrypt(str(request.form['password'])) 
-        print(username,' ',password)
+        firstname=request.form['firstname']
+        lastname=request.form['lastname']
+        email=request.form['email']
+        qualification=request.form['qualification']
+        mobileno=request.form['mobileno']
+        linkedin=request.form['linkedin']
+        password=sha256_crypt.encrypt(str(request.form['password']))
         cur=mysql.connection.cursor()
-        r=cur.execute("INSERT INTO users(username,password) VALUES(%s,%s)",(username,password))
-        print(r)
+        print(firstname,lastname,email,qualification,mobileno,linkedin,password)
+        cur.execute("INSERT INTO innovator(first_name,last_name,email_id,qualification,mobile_no,linkedin,password) VALUES(%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,qualification,mobileno,linkedin,password))
+        #commit to DB
         mysql.connection.commit()
-        #result=cur.execute("SELECT * FROM users WHERE username=%s",[username])
+        #close connection 
         cur.close()
-        return redirect(url_for('home'))
-    return render_template('register1.html',form=form)
+        msg = 'Details Submitted'
+        return render_template('registerinnovator.html', msg=msg)
+    return render_template('registerinnovator.html',form=form)
+
+class MentorRegister(Form):
+    firstname=StringField("firstname",[validators.Length(min=1,max=200)])
+    lastname=StringField("lastname",[validators.Length(min=1,max=10)])
+    email=StringField("email",[validators.Length(min=1,max=200)])
+    company=StringField("company",[validators.Length(min=1,max=200)])
+    mobileno=StringField("mobileno",[validators.Length(min=1,max=200)])
+    linkedin=StringField("linkedin",[validators.Length(min=1,max=200)])
+    pancard=StringField("pancard",[validators.Length(min=1,max=200)])
+    specialization=StringField("specialization",[validators.Length(min=1,max=200)])
+    password=PasswordField("password",[validators.DataRequired(),validators.Length(min=1,max=200)])
+
+@app.route('/registermentor',methods=['GET','POST'])
+def mentorRegister():
+    form=MentorRegister(request.form)
+    if request.method=='POST':
+        firstname=request.form['firstname']
+        lastname=request.form['lastname']
+        email=request.form['email']
+        company=request.form['company']
+        mobileno=request.form['mobileno']
+        linkedin=request.form['linkedin']
+        qualification=request.form['qualification']
+        specialization=request.form['specialization']
+        password=sha256_crypt.encrypt(str(request.form['password']))
+        cur=mysql.connection.cursor()
+        cur.execute("INSERT INTO mentor(first_name,last_name,email_id,company,mobile_no,linkedin,qualification,specialization,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,company,mobileno,linkedin,qualification,specialization,password))
+        #commit to DB
+        mysql.connection.commit()
+        #close connection 
+        cur.close()
+        msg = 'Details Submitted'
+        return render_template('registermentor.html', msg=msg)
+    return render_template('registermentor.html',form=form)
+
+class OrgRegister(Form):
+    email=StringField("email",[validators.Length(min=1,max=200)])
+    company=StringField("company",[validators.Length(min=1,max=200)])
+    mobileno=StringField("mobileno",[validators.Length(min=1,max=200)])
+    linkedin=StringField("linkedin",[validators.Length(min=1,max=200)])
+    pancard=StringField("pancard",[validators.Length(min=1,max=200)])
+    password=PasswordField("password",[validators.DataRequired(),validators.Length(min=1,max=200)])
+
+@app.route('/registerorganization',methods=['GET','POST'])
+def organizationRegister():
+    form=OrgRegister(request.form)
+    if request.method=='POST':
+        email=request.form['email']
+        company=request.form['company']
+        mobileno=request.form['mobileno']
+        linkedin=request.form['linkedin']
+        pancard=request.form['pancard']
+        password=sha256_crypt.encrypt(str(request.form['password']))
+        cur=mysql.connection.cursor()
+        cur.execute("INSERT INTO organization(email_id,company,mobile_no,linkedin,pancard,password) VALUES(%s,%s,%s,%s,%s,%s)",(email,company,mobileno,linkedin,pancard,password))
+        #commit to DB
+        mysql.connection.commit()
+        #close connection 
+        cur.close()
+        msg = 'Details Submitted'
+        return render_template('registerorganization.html', msg=msg)
+    return render_template('registerorganization.html',form=form)
+
+
     
 class Login(Form):
-    username=StringField('Username',[validators.Length(min=5)])
-    password=PasswordField('Password',[validators.Length(min=5)])
+    email=StringField('email',[validators.Length(min=5)])
+    password=PasswordField('password',[validators.Length(min=5)])
+    role=StringField('role')
+
 #user login
 @app.route('/login',methods=['POST','GET'])
 def login():    
     #form=Login(request.form)
     if request.method=='POST':
-        username=request.form['username']
-        password_candidate=request.form['password'] 
+        email=request.form['email']
+        password_candidate=request.form['password']
+        role=request.form['role']
         cur=mysql.connection.cursor()
-        result=cur.execute("SELECT * FROM users WHERE username=%s",[username])
+        result=cur.execute("SELECT * FROM %s WHERE email_id=%s",[role,email])
         if result>0:
             #get stored hash
             data=cur.fetchone()
@@ -110,10 +189,10 @@ def login():
             if sha256_crypt.verify(password_candidate,password):
                 #passed
                 session['logged_in']=True
-                session['username']=username
+                session['username']=data['firstname']
                 # app.logger.info('PASSWORD MATCHED ')
                 print('registered')
-                return redirect(url_for('home'))
+                return render_template('login.html',error=error)
             else:
                 error="invalid Login"
                 # app.logger.info('PASSWORD NOT MATCHED')
