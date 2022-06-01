@@ -65,13 +65,14 @@ def register():
     form=RegisterRole(request.form)
     if request.method=='POST':
         role=dict(request.form)['role']
-        print(role)
+        role_url='register'+role+'.html'
+        print(role_url)
+        return render_template(role_url)
     return render_template('register1.html',form=form)
 
-
 #user registration
-@app.route('/register',methods=['GET','POST'])
-def registergjgh():
+@app.route('/registerinnovator',methods=['GET','POST'])
+def registerInnovator():
     print(request.method,'register def')
     form=RegisterRole(request.form)
     if request.method=='POST':
