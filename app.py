@@ -101,6 +101,40 @@ def innovatorRegister():
         return render_template('registerinnovator.html', msg=msg)
     return render_template('registerinnovator.html',form=form)
 
+class InvestorRegister(Form):
+    firstname=StringField("firstname",[validators.Length(min=1,max=200)])
+    lastname=StringField("lastname",[validators.Length(min=1,max=10)])
+    email=StringField("email",[validators.Length(min=1,max=200)])
+    company=StringField("company",[validators.Length(min=1,max=200)])
+    mobileno=StringField("mobileno",[validators.Length(min=1,max=200)])
+    linkedin=StringField("linkedin",[validators.Length(min=1,max=200)])
+    pancard=StringField("pancard",[validators.Length(min=1,max=200)])
+    
+    password=PasswordField("password",[validators.DataRequired(),validators.Length(min=1,max=200)])
+
+@app.route('/registerinvestor',methods=['GET','POST'])
+def investorRegister():
+    form=InvestorRegister(request.form)
+    if request.method=='POST':
+        firstname=request.form['firstname']
+        lastname=request.form['lastname']
+        email=request.form['email']
+        company=request.form['company']
+        mobileno=request.form['mobileno']
+        linkedin=request.form['linkedin']
+        pancard=request.form['pancard']
+        password=sha256_crypt.encrypt(str(request.form['password']))
+        cur=mysql.connection.cursor()
+        cur.execute("INSERT INTO investor(first_name,last_name,email_id,company,mobile_no,linkedin,pancard,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,company,mobileno,linkedin,pancard,password))
+        #commit to DB
+        mysql.connection.commit()
+        #close connection 
+        cur.close()
+        msg = 'Details Submitted'
+        return render_template('registerinvestor.html', msg=msg)
+    return render_template('registerinvestor.html',form=form)
+
+
 class MentorRegister(Form):
     firstname=StringField("firstname",[validators.Length(min=1,max=200)])
     lastname=StringField("lastname",[validators.Length(min=1,max=10)])
