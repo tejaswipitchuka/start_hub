@@ -29,10 +29,6 @@ mysql=MySQL(app)
 def index():
     return render_template('index.html')
 
-@app.route('/viewideas')
-def viewIdea():
-    return render_template('viewideas.html')
-
 @app.route('/idea_post',methods=['POST','GET'])
 def ideaPost():
     print(request.form)
@@ -234,6 +230,7 @@ def login():
                 data=cur.fetchone()
                 session['role']=role
                 session['name']=data['first_name']
+                session['title']=''
                 # app.logger.info('PASSWORD MATCHED ')
                 print('registered')
                 print(session['name'])
@@ -276,16 +273,30 @@ def ideaPosts(title):
 @app.route('/viewideas')
 @is_logged_in
 def viewIdeas():
-    print('hey******************')
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM idea_post")
     projects=cur.fetchall()
-    print(projects)
     if res>0:
         return render_template('viewideas.html',projects=projects)
     else:
         msg='No Idea posts Available'
         return render_template('viewideas.html',msg=msg)
+
+@app.route('/increasecount/<string:title>')
+@is_logged_in
+def increase(title):
+    cur=mysql.connection.cursor()
+    print(title)
+    res=cur.execute("SELECT upvotes FROM idea_post where title=%s",[title])
+    projects=cur.fetchall()
+    print(projects)
+    print(projects['upvotes'])
+    if res>0:
+        return redirect(url_for('viewIdeas'))
+    else:
+        msg='No Idea posts Available'
+        return redirect(url_for('viewIdeas'))
+
 
 if __name__=='__main__':
     app.secret_key='1234'
