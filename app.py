@@ -4,7 +4,7 @@ from msilib.schema import File
 from pydoc import Doc, describe
 from turtle import title
 from flask import Flask, render_template,flash,redirect,url_for,session,logging,request
-
+from datetime import date
 from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
@@ -29,6 +29,10 @@ mysql=MySQL(app)
 def index():
     return render_template('index.html')
 
+@app.route('/viewideas')
+def viewIdea():
+    return render_template('viewideas.html')
+
 @app.route('/idea_post',methods=['POST','GET'])
 def ideaPost():
     print(request.form)
@@ -37,10 +41,12 @@ def ideaPost():
         title=form.title.data
         subtitle=dict(request.form)['subtitle']
         description=dict(request.form)['description']
+        author=session['name']
+        cur_date=str(date.today())
         #create cursor
         cur=mysql.connection.cursor()
         #execute
-        cur.execute("INSERT INTO idea_post(title,subtitle,description) VALUES(%s,%s,%s)",(title,subtitle,description))
+        cur.execute("INSERT INTO idea_post(title,subtitle,description,author,date) VALUES(%s,%s,%s,%s,%s)",(title,subtitle,description,author,cur_date))
         print("inserted into idea_post")
         #commit to DB
         mysql.connection.commit()
@@ -50,6 +56,7 @@ def ideaPost():
     else:
         flash('Please fill the form correctly','danger')
     return render_template('idea_post.html')
+
 
 class IdeaPostForm(Form):
     title=StringField("title",[validators.Length(min=1)])
@@ -100,6 +107,38 @@ def innovatorRegister():
         msg = 'Details Submitted'
         return render_template('registerinnovator.html', msg=msg)
     return render_template('registerinnovator.html',form=form)
+
+class InvestorRegister(Form):
+    firstname=StringField("firstname",[validators.Length(min=1,max=200)])
+    lastname=StringField("lastname",[validators.Length(min=1,max=10)])
+    email=StringField("email",[validators.Length(min=1,max=200)])
+    mobileno=StringField("mobileno",[validators.Length(min=1,max=200)])
+    linkedin=StringField("linkedin",[validators.Length(min=1,max=200)])
+    company=StringField("company",[validators.Length(min=1,max=200)])
+    pancard=StringField("pancard",[validators.Length(min=1,max=200)])
+    password=PasswordField("password",[validators.DataRequired(),validators.Length(min=1,max=200)])
+
+@app.route('/registerinvestor',methods=['GET','POST'])
+def investorRegister():
+    form=InvestorRegister(request.form)
+    if request.method=='POST':
+        firstname=request.form['firstname']
+        lastname=request.form['lastname']
+        email=request.form['email']
+        mobileno=request.form['mobileno']
+        linkedin=request.form['linkedin']
+        company=request.form['company']
+        pancard=request.form['pancard']
+        password=sha256_crypt.encrypt(str(request.form['password']))
+        cur=mysql.connection.cursor()
+        cur.execute("INSERT INTO investor(first_name,last_name,email_id,mobile_no,linkedin,company,pancard,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,mobileno,linkedin,company,pancard,password))
+        #commit to DB
+        mysql.connection.commit()
+        #close connection 
+        cur.close()
+        msg = 'Details Submitted'
+        return render_template('registerinvestor.html', msg=msg)
+    return render_template('registerinvestor.html',form=form)
 
 class MentorRegister(Form):
     firstname=StringField("firstname",[validators.Length(min=1,max=200)])
@@ -170,42 +209,45 @@ class Login(Form):
     password=PasswordField('password',[validators.Length(min=5)])
     role=StringField('role')
 
+
 #user login
 @app.route('/login',methods=['POST','GET'])
 def login():    
-    #form=Login(request.form)
+    form=Login(request.form)
     if request.method=='POST':
         email=request.form['email']
-        password_candidate=request.form['password']
-        role=request.form['role']
+        password_input=request.form['password'] 
+        role=request.form['role'] 
         cur=mysql.connection.cursor()
-        result=cur.execute("SELECT * FROM %s WHERE email_id=%s",[role,email])
+        result=cur.execute("SELECT * FROM {dbname} WHERE email_id='{emailid}'".format(dbname=role,emailid=email))
+        print(result)
         if result>0:
             #get stored hash
             data=cur.fetchone()
             password=data['password']
-          
             #compare passwords
-            if sha256_crypt.verify(password_candidate,password):
+            if sha256_crypt.verify(password_input,password):
                 #passed
+                print('in if')
                 session['logged_in']=True
-                session['username']=data['firstname']
+                cur.execute("SELECT * FROM {dbname} WHERE email_id='{emailid}'".format(dbname=role,emailid=email))
+                data=cur.fetchone()
+                session['role']=role
+                session['name']=data['first_name']
                 # app.logger.info('PASSWORD MATCHED ')
                 print('registered')
-                return render_template('login.html',error=error)
+                print(session['name'])
+                return redirect(url_for('index'))
             else:
-                error="invalid Login"
+                error="Invalid Login"
                 # app.logger.info('PASSWORD NOT MATCHED')
                 # flash('Invalid login','danger')
                 return render_template('login.html',error=error)
         else:
-            app.logger.info('no user')   
-            error="username not found"
+            #app.logger.info('no user')   
+            error="Username not found"
             return render_template('login.html',error=error)
     return render_template('login.html')
-    
-
-
 
 def is_logged_in(f):
     @wraps(f)
@@ -221,16 +263,30 @@ def is_logged_in(f):
 @is_logged_in
 def logout():
     session.clear()
-    flash('You are now logged out','success')
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
-
-@app.route('/home')
+@app.route('/viewideas/<string:title>')
 @is_logged_in
-def home():
-    return render_template('home.html')
+def ideaPosts(title):
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM idea_post WHERE title=%s",[title])
+    project=cur.fetchone()
+    return render_template('idea.html',project=project)
 
+@app.route('/viewideas')
+@is_logged_in
+def viewIdeas():
+    print('hey******************')
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM idea_post")
+    projects=cur.fetchall()
+    print(projects)
+    if res>0:
+        return render_template('viewideas.html',projects=projects)
+    else:
+        msg='No Idea posts Available'
+        return render_template('viewideas.html',msg=msg)
 
 if __name__=='__main__':
-    app.secret_key='raja'
+    app.secret_key='1234'
     app.run(debug=True)

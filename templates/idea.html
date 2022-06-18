@@ -1,0 +1,34 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+    <section class="viewidea"><br><br><br>
+        <h2>Title</h2>
+        <h3><small class="text-muted">{{project.title}}</small></h3></span>
+        <h6>
+            <p class="text-end">Date: </p>
+            <p class="text-end">Author:  </p>
+        </h6>
+        <div class="card">
+            <div class="card-body">
+              <!-- <h5 class="card-title">Special title treatment</h5> -->
+                <p class="card-text">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Sed, sit dicta? Dolores provident distinctio officia nemo numquam excepturi velit, totam ex. Dolore exercitationem sapiente soluta eaque, architecto harum ducimus minima! Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsam facere fugit, voluptatibus soluta est tempore cum, laborum nemo incidunt ducimus doloribus iure omnis animi dolor, eum maiores illum nisi a!</p>
+              <a href="#" class="btn btn-primary"><i class="fa-solid fa-caret-up"></i> Upvote</a>
+            </div>
+        </div><br>
+
+        <div class="card w-75">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="exampleFormControlTextarea1" class="form-label">Comments</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                    </div>
+                </form>
+              <a href="#" class="btn btn-primary">Submit</a>
+            </div>
+        </div>
+
+    </section>
+
+{% endblock %}
