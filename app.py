@@ -53,11 +53,43 @@ def ideaPost():
         flash('Please fill the form correctly','danger')
     return render_template('idea_post.html')
 
-
 class IdeaPostForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     subtitle=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
+
+
+@app.route('/blog',methods=['POST','GET'])
+def blogpost():
+    print(request.form)
+    form=BlogPostForm(request.form)
+    if request.method=='POST':
+        title=form.title.data
+        author=dict(request.form)['author']
+        description=dict(request.form)['description']
+        cur_date=str(date.today())
+        
+        #create cursor
+        cur=mysql.connection.cursor()
+        #execute
+        cur.execute("INSERT INTO blogs(title,author,description,date) VALUES(%s,%s,%s,%s)",(title,author,description,cur_date))
+        
+        #commit to DB
+        mysql.connection.commit()
+        #close connection
+        cur.close()
+        
+    else:
+        flash('Please fill the form correctly','danger')
+    return render_template('blog.html')
+
+class BlogPostForm(Form):
+    title=StringField("title",[validators.Length(min=1)])
+    author=StringField("subtitle",[validators.Length(min=1)])
+    description=StringField("description",[validators.Length(min=1)])
+    time=StringField("time",[validators.Length(min=1)])
+
+
 
 class RegisterRole(Form):
     role=StringField('role')
@@ -281,7 +313,30 @@ def viewIdeas():
     else:
         msg='No Idea posts Available'
         return render_template('viewideas.html',msg=msg)
-
+@app.route('/viewblog')
+@is_logged_in
+def viewblog():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT title,date,author FROM blogs")
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('viewblog.html',projects=projects)
+    else:
+        msg='No Idea posts Available'
+        return render_template('viewblog.html',msg=msg)
+        
+@app.route('/showblog/<string:title>')
+@is_logged_in
+def showblog(title):
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM blogs WHERE title=%s",[title])
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('showblog.html',projects=projects)
+    else:
+        msg='No Idea posts Available'
+        return render_template('showblog.html',msg=msg)
+           
 @app.route('/increasecount/<string:title>')
 @is_logged_in
 def increase(title):

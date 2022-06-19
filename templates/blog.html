@@ -1,0 +1,27 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+    <div class="container2">
+        <div><h2><center>Pitch a story</center></h2></div><br>
+        <form method="post" action="/blog" class="row g-3">
+            <div class="col-12">
+                <label for="inputTitle" class="form-label">Article Title</label>
+                    <input type="text" name="title" class="form-control" id="inputTitle" placeholder="">
+            </div>
+            <div class="mb-3">
+                <label for="inputauthor" class="form-label">Author</label>
+                <textarea class="form-control" name="author" id="inputauthor" rows="1"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="inputDescription" class="form-label">Pitch</label>
+                <textarea class="form-control" name="description" id="inputDescription" rows="17"></textarea>
+            </div>
+           
+            <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
