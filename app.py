@@ -57,7 +57,37 @@ class IdeaPostForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     subtitle=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
+#problemstatements
+class PSForm(Form):
+    title=StringField("title",[validators.Length(min=1)])
+    
+    description=StringField("description",[validators.Length(min=1)])
+@app.route('/postps',methods=['POST','GET'])
+def PS():
+    print(request.form)
+    form=PSForm(request.form)
+    if request.method=='POST':
+        title=form.title.data
+        
+        description=dict(request.form)['description']
+        author=session['comp']
+        cur_date=str(date.today())
+        #create cursor
+        cur=mysql.connection.cursor()
+        #execute
+        cur.execute("INSERT INTO ps(stmt,description,author,date) VALUES(%s,%s,%s,%s)",(title,description,author,cur_date))
+        print("inserted into ps")
+        #commit to DB
+        mysql.connection.commit()
+        #close connection
+        cur.close()
+        flash('Your request has been submitted','success')
+    else:
+        flash('Please fill the form correctly','danger')
+    return render_template('postps.html')
 
+
+#blogs
 
 @app.route('/blog',methods=['POST','GET'])
 def blogpost():
@@ -261,11 +291,16 @@ def login():
                 cur.execute("SELECT * FROM {dbname} WHERE email_id='{emailid}'".format(dbname=role,emailid=email))
                 data=cur.fetchone()
                 session['role']=role
-                session['name']=data['first_name']
+                if(role!='organization'):
+                    session['name']=data['first_name']
+                if(role=='organization'):
+
+                    session['comp']=data['company']
                 session['title']=''
                 # app.logger.info('PASSWORD MATCHED ')
                 print('registered')
-                print(session['name'])
+                if(role!='organization'):
+                    print(session['name'])
                 return redirect(url_for('index'))
             else:
                 error="Invalid Login"
@@ -294,25 +329,56 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+
+@app.route('/viewhalfideas')
+@is_logged_in
+def viewIdeas():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT title,subtitle,date FROM idea_post")
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('viewhalfideas.html',projects=projects)
+    else:
+        msg='No Idea posts Available'
+        return render_template('viewhalfideas.html',msg=msg)
+
 @app.route('/viewideas/<string:title>')
 @is_logged_in
 def ideaPosts(title):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM idea_post WHERE title=%s",[title])
-    project=cur.fetchone()
-    return render_template('idea.html',project=project)
-
-@app.route('/viewideas')
-@is_logged_in
-def viewIdeas():
-    cur=mysql.connection.cursor()
-    res=cur.execute("SELECT * FROM idea_post")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewideas.html',projects=projects)
     else:
         msg='No Idea posts Available'
         return render_template('viewideas.html',msg=msg)
+#ps for innovators
+@app.route('/viewhalfps')
+@is_logged_in
+def viewhalfps():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT stmt,author FROM ps")
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('viewhalfps.html',projects=projects)
+    else:
+        msg='No Problem Statements Available'
+        return render_template('viewhalfps.html',msg=msg)
+@app.route('/viewps/<string:stmt>')
+@is_logged_in
+def viewps(stmt):
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('viewps.html',projects=projects)
+    else:
+        msg='No Problem Statements  Available'
+        return render_template('viewps.html',msg=msg)
+
+#
+
 @app.route('/viewblog')
 @is_logged_in
 def viewblog():
@@ -322,7 +388,7 @@ def viewblog():
     if res>0:
         return render_template('viewblog.html',projects=projects)
     else:
-        msg='No Idea posts Available'
+        msg='No blogs Available'
         return render_template('viewblog.html',msg=msg)
         
 @app.route('/showblog/<string:title>')
@@ -334,7 +400,7 @@ def showblog(title):
     if res>0:
         return render_template('showblog.html',projects=projects)
     else:
-        msg='No Idea posts Available'
+        msg='No blogs Available'
         return render_template('showblog.html',msg=msg)
            
 @app.route('/increasecount/<string:title>')

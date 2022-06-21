@@ -1,0 +1,27 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+    <section class="viewhalfideas"><br><br><br>
+        <br><br>
+        {% for project in projects %}
+        <form method="POST">
+            <div class="card w-75">
+                <div class="card-body">
+                    
+                    
+                    
+                    <h3><a href="/viewps/{{project.stmt}}" >{{project.stmt}}</a></h3>
+                    <h6 class="card-title">{{project.author}}</h6>
+                    
+                    
+                      
+                    
+                    
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        </form>
+    </section>
+{% endblock %}

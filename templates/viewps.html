@@ -2,22 +2,24 @@
 {% include 'includes/_messages.html' %}
 {% include 'layout.html' %}
 {% block body %}
-    <section class="viewideas"><br><br><br>
+    <section class="viewps"><br><br><br>
         {% for project in projects %}
         <form method="POST">
             <div class="card w-75">
                 <div class="card-body">
                     <br><br>
-                    <h2 class="card-title">{{project.title}}</h2>
-                    <h4 class="card-title">{{project.subtitle}}</h4>
-                    <h4 class="card-title">{{project.date}}</h4>
+                    <h1 class="card-title">{{project.author}}</h1>
+                    <h5 class="card-title">{{project.date}}</h5>
+                    <h2 class="card-title">{{project.stmt}}</h2>
+                    
+                    
                     <div style="width: 80%;  "> 
                         <p class="card-text">{{project.description}}</p>
                     </div>
                     
-                        <a href="/increasecount/{{project.title}}" class="btn btn-primary"><i class="fa-solid fa-caret-up"></i> Upvote {{project.upvote}}</a>
+                       
                     
-                        <a href="/increasecount/{{project.title}}" class="btn btn-primary"> Solution</a>
+                    
                     
                 </div>
             </div><br>
