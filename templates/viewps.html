@@ -3,27 +3,20 @@
 {% include 'layout.html' %}
 {% block body %}
     <section class="viewps"><br><br><br>
-        
         <form method="POST">
             <div class="card w-75">
                 <div class="card-body">
                     <br><br>
                     <h1 class="card-title">{{projects.author}}</h1>
                     <h5 class="card-title">{{projects.date}}</h5>
-                    <h2 class="card-title">{{projects.stmt}}</h2>
-                    
-                    
+                    <h2 class="card-title">{{projects.stmt}}</h2>        
                     <div style="width: 80%;  "> 
                         <p class="card-text">{{projects.description}}</p>
                     </div>
-                    
-                       
-                    
-                    
-                    
                 </div>
             </div><br>
-            
         </form>
     </section>
 {% endblock %}
+
+

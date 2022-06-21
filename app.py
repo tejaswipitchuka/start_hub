@@ -9,7 +9,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-
+from __init__ import create_app, socketio
 
 
 app=Flask(__name__)
@@ -28,6 +28,27 @@ mysql=MySQL(app)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+class Admin(Form):
+    username=StringField('username',[validators.Length(min=5)])
+    password=PasswordField('password',[validators.Length(min=5)])
+
+@app.route('/adminlogin',methods=['POST','GET'])
+def admin():
+    form=Login(request.form)
+    if request.method=='POST':
+        username=request.form['username']
+        password=request.form['password']
+        print(username,password,'*******************')
+        if(username=='admin' and password=='admin'):
+            return redirect(url_for('dashboard'))
+        else:
+            return 'not admin'
+    return render_template('adminlogin.html')
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html')
 
 @app.route('/idea_post',methods=['POST','GET'])
 def ideaPost():
@@ -57,11 +78,13 @@ class IdeaPostForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     subtitle=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
+
 #problemstatements
 class PSForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     
     description=StringField("description",[validators.Length(min=1)])
+
 @app.route('/postps',methods=['POST','GET'])
 def PS():
     print(request.form)
@@ -88,7 +111,6 @@ def PS():
 
 
 #blogs
-
 @app.route('/blog',methods=['POST','GET'])
 def blogpost():
     print(request.form)
@@ -118,7 +140,6 @@ class BlogPostForm(Form):
     author=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
     time=StringField("time",[validators.Length(min=1)])
-
 
 
 class RegisterRole(Form):
@@ -422,3 +443,4 @@ def increase(title):
 if __name__=='__main__':
     app.secret_key='1234'
     app.run(debug=True)
+    socketio.run(create_app(debug=True))
