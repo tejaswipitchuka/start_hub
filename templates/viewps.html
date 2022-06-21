@@ -3,18 +3,18 @@
 {% include 'layout.html' %}
 {% block body %}
     <section class="viewps"><br><br><br>
-        {% for project in projects %}
+        
         <form method="POST">
             <div class="card w-75">
                 <div class="card-body">
                     <br><br>
-                    <h1 class="card-title">{{project.author}}</h1>
-                    <h5 class="card-title">{{project.date}}</h5>
-                    <h2 class="card-title">{{project.stmt}}</h2>
+                    <h1 class="card-title">{{projects.author}}</h1>
+                    <h5 class="card-title">{{projects.date}}</h5>
+                    <h2 class="card-title">{{projects.stmt}}</h2>
                     
                     
                     <div style="width: 80%;  "> 
-                        <p class="card-text">{{project.description}}</p>
+                        <p class="card-text">{{projects.description}}</p>
                     </div>
                     
                        
@@ -23,7 +23,7 @@
                     
                 </div>
             </div><br>
-            {% endfor %}
+            
         </form>
     </section>
 {% endblock %}

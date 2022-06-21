@@ -370,7 +370,7 @@ def viewhalfps():
 def viewps(stmt):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
-    projects=cur.fetchall()
+    projects=cur.fetchone()
     if res>0:
         return render_template('viewps.html',projects=projects)
     else:
