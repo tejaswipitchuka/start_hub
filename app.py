@@ -386,12 +386,13 @@ def viewhalfps():
     else:
         msg='No Problem Statements Available'
         return render_template('viewhalfps.html',msg=msg)
-@app.route('/viewps/<string:stmt>')
+@app.route('/viewhalfps/<string:stmt>')
 @is_logged_in
 def viewps(stmt):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
-    projects=cur.fetchone()
+    projects=cur.fetchall()
+    print(projects)
     if res>0:
         return render_template('viewps.html',projects=projects)
     else:
