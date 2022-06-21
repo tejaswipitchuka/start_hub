@@ -39,7 +39,6 @@ def admin():
     if request.method=='POST':
         username=request.form['username']
         password=request.form['password']
-        print(username,password,'*******************')
         if(username=='admin' and password=='admin'):
             return redirect(url_for('dashboard'))
         else:
@@ -48,7 +47,30 @@ def admin():
 
 @app.route('/dashboard')
 def dashboard():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM investor WHERE status='no'")
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('dashboard.html',projects=projects)
+    else:
+        msg='No pending registrations'
+        return render_template('dashboard.html',msg=msg)
     return render_template('dashboard.html')
+
+@app.route('/accepted/<string:email_id>')
+def accepted(email_id):
+    cur=mysql.connection.cursor()
+    res=cur.execute("UPDATE investor SET status='yes' WHERE email_id='{email_id}' ".format(email_id=email_id))
+    mysql.connection.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/rejected/<string:email_id>')
+def rejected(email_id):
+    cur=mysql.connection.cursor()
+    res=cur.execute("UPDATE investor SET status='invalid' WHERE email_id='{email_id}' ".format(email_id=email_id))
+    mysql.connection.commit()
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/idea_post',methods=['POST','GET'])
 def ideaPost():
@@ -208,9 +230,10 @@ def investorRegister():
         linkedin=request.form['linkedin']
         company=request.form['company']
         pancard=request.form['pancard']
+        status='no'
         password=sha256_crypt.encrypt(str(request.form['password']))
         cur=mysql.connection.cursor()
-        cur.execute("INSERT INTO investor(first_name,last_name,email_id,mobile_no,linkedin,company,pancard,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,mobileno,linkedin,company,pancard,password))
+        cur.execute("INSERT INTO investor(first_name,last_name,email_id,mobile_no,linkedin,company,pancard,password,status) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,mobileno,linkedin,company,pancard,password,status))
         #commit to DB
         mysql.connection.commit()
         #close connection 
@@ -312,10 +335,15 @@ def login():
                 cur.execute("SELECT * FROM {dbname} WHERE email_id='{emailid}'".format(dbname=role,emailid=email))
                 data=cur.fetchone()
                 session['role']=role
+                if(role=='investor' and data['status']=='no'):
+                    error="Registration not confirmed"
+                    return render_template('login.html',error=error)
+                if(role=='investor' and data['status']=='invalid'):
+                    error="You are not authorized user"
+                    return render_template('login.html',error=error)
                 if(role!='organization'):
                     session['name']=data['first_name']
                 if(role=='organization'):
-
                     session['comp']=data['company']
                 session['title']=''
                 # app.logger.info('PASSWORD MATCHED ')
