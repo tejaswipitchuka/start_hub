@@ -39,6 +39,8 @@ def admin():
     if request.method=='POST':
         username=request.form['username']
         password=request.form['password']
+        session['role']='admin'
+        session['logged_in']=True
         if(username=='admin' and password=='admin'):
             return redirect(url_for('dashboard'))
         else:
