@@ -461,9 +461,15 @@ def increase(title):
     cur=mysql.connection.cursor()
     print(title)
     res=cur.execute("SELECT upvotes FROM idea_post where title=%s",[title])
-    projects=cur.fetchall()
+    projects=cur.fetchone()
     print(projects)
-    print(projects['upvotes'])
+    count=projects['upvotes']
+    count+=1
+    res=cur.execute("UPDATE idea_post SET upvotes={count} WHERE title='{title}' ".format(count=count,title=title))
+    #commit to DB
+    mysql.connection.commit()
+    #close connection 
+    cur.close()
     if res>0:
         return redirect(url_for('viewIdeas'))
     else:
