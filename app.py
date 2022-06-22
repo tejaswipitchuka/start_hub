@@ -385,7 +385,7 @@ def logout():
 @is_logged_in
 def viewIdeas():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT title,subtitle,date FROM idea_post")
+    res=cur.execute("SELECT * FROM idea_post")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewhalfideas.html',projects=projects)
@@ -464,6 +464,8 @@ def increase(title):
     projects=cur.fetchone()
     print(projects)
     count=projects['upvotes']
+    if(count==None):
+        count=0
     count+=1
     res=cur.execute("UPDATE idea_post SET upvotes={count} WHERE title='{title}' ".format(count=count,title=title))
     #commit to DB
