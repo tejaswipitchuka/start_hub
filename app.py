@@ -460,6 +460,7 @@ def showblog(title):
 def increase(title):
     cur=mysql.connection.cursor()
     print(title)
+    session[title]=True
     res=cur.execute("SELECT upvotes FROM idea_post where title=%s",[title])
     projects=cur.fetchone()
     print(projects)
@@ -478,6 +479,17 @@ def increase(title):
         msg='No Idea posts Available'
         return redirect(url_for('viewIdeas'))
 
+@app.route('/sort')
+def sort():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM idea_post ORDER BY UPVOTES DESC")
+    projects=cur.fetchall()
+    print(projects)
+    if res>0:
+        return render_template('viewhalfideas.html',projects=projects)
+    else:
+        msg='No Idea posts Available'
+        return render_template('viewhalfideas.html',msg=msg)
 
 if __name__=='__main__':
     app.secret_key='1234'

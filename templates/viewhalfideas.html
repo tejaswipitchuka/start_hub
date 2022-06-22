@@ -4,8 +4,9 @@
 {% block body %}
     <section class="viewhalfideas"><br><br><br>
         <br><br>
+        <a href="/sort" class="btn btn-primary"><i class="fa-solid fa-arrow-up-9-1"></i>Sort by upvotes</a>
         {% for project in projects %}
-        <form method="POST">
+        <form method="POST"><br>
             <div class="card w-50">
                 <div class="card-body">
                     <h3><a href="/viewideas/{{project.title}}" >{{project.title}}</a></h3> 
@@ -14,7 +15,6 @@
                     <a href="#" class="btn btn-primary"><i class="fa-solid fa-caret-up"></i> {{project.upvotes}}</a>
                 </div>
             </div>
-            <br>
             {% endfor %}
         </form>
     </section>
