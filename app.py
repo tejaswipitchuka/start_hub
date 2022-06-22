@@ -9,8 +9,9 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-
-
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import  FileStorage
+import os
 
 app=Flask(__name__)
 
@@ -39,6 +40,7 @@ def ideaPost():
         description=dict(request.form)['description']
         author=session['name']
         cur_date=str(date.today())
+        upvotes=0
         #create cursor
         cur=mysql.connection.cursor()
         #execute
@@ -370,10 +372,11 @@ def viewhalfps():
 def viewps(stmt):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
-    projects=cur.fetchall()
-    print(projects)
+    project=cur.fetchone()
+    print(project)
+    print(res)
     if res>0:
-        return render_template('viewps.html',projects=projects)
+        return render_template('viewps.html',project=project)
     else:
         msg='No Problem Statements  Available'
         return render_template('viewps.html',msg=msg)
@@ -410,7 +413,7 @@ def increase(title):
     cur=mysql.connection.cursor()
     print(title)
     res=cur.execute("SELECT upvotes FROM idea_post where title=%s",[title])
-    projects=cur.fetchall()
+    projects=cur.fetchone()
     print(projects)
     print(projects['upvotes'])
     if res>0:
@@ -418,8 +421,20 @@ def increase(title):
     else:
         msg='No Idea posts Available'
         return redirect(url_for('viewIdeas'))
+#file upload
+
+UPLOAD_FOLDER = 'C:/Users/Admin/Desktop/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+	
+@app.route('/uploader', methods = ['GET', 'POST'])
+def upload_file():
+   if request.method == 'POST':
 
 
+       f = request.files['file'] 
+       f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+       return 'File has been uploaded to the location successfully!'
 if __name__=='__main__':
     app.secret_key='1234'
     app.run(debug=True)

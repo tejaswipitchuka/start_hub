@@ -19,11 +19,12 @@
                     </div>
                     <div class="col-6">
                         <label for="inputPassword" class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" id="inputPassword" placeholder="">
+                        <input type="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}"
+                        title="Must contain at least one  number and one uppercase and lowercase letter, and at least 6 or more characters" name="password" class="form-control" id="inputPassword" placeholder="">
                     </div>
                     <div class="col-6">
                         <label for="inputMobileno" class="form-label">Mobile no</label>
-                        <input type="tel" name="mobileno" class="form-control" id="inputMobileno" placeholder="">
+                        <input type="tel" pattern="[0-9]{3}[0-9]{3}[0-9]{4}" name="mobileno" class="form-control" id="inputMobileno" placeholder="">
                     </div>
                     <div class="col-12">
                         <label for="inputCompany" class="form-label">Company</label>
