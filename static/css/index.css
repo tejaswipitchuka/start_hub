@@ -23,6 +23,11 @@
   padding-bottom: 2%;
 }
 
+.dashboard{
+  padding-top: 5%;
+  padding-left: 2%;
+}
+
 .card-text{
   font-size: 1.25rem;
 }

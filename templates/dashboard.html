@@ -1,0 +1,23 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+    <section class="dashboard"><br><br>
+        <div class="row">
+          {% for project in projects %}
+            <div class="col-sm-6">
+              <div class="card">
+                <div class="card-body">
+                    Name:<h5 class="card-title">{{project.first_name}}</h5>
+                    Company:<h5 class="card-title">{{project.company}}</h5>
+                    Pancard:<h5 class="card-title">{{project.pancard}}</h5>
+                    Linkedin:<h5 class="card-title">{{project.linkedin}}</h5>
+                    <a href="/accepted/{{project.email_id}}" class="btn btn-primary">Accept</a>
+                    <a href="/rejected/{{project.email_id}}" class="btn btn-danger">Reject</a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+    </section>
+
+{% endblock %}

@@ -9,9 +9,8 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-from werkzeug.utils import secure_filename
-from werkzeug.datastructures import  FileStorage
-import os
+from __init__ import create_app, socketio
+
 
 app=Flask(__name__)
 
@@ -30,6 +29,51 @@ mysql=MySQL(app)
 def index():
     return render_template('index.html')
 
+class Admin(Form):
+    username=StringField('username',[validators.Length(min=5)])
+    password=PasswordField('password',[validators.Length(min=5)])
+
+@app.route('/adminlogin',methods=['POST','GET'])
+def admin():
+    form=Login(request.form)
+    if request.method=='POST':
+        username=request.form['username']
+        password=request.form['password']
+        session['role']='admin'
+        session['logged_in']=True
+        if(username=='admin' and password=='admin'):
+            return redirect(url_for('dashboard'))
+        else:
+            return 'not admin'
+    return render_template('adminlogin.html')
+
+@app.route('/dashboard')
+def dashboard():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM investor WHERE status='no'")
+    projects=cur.fetchall()
+    if res>0:
+        return render_template('dashboard.html',projects=projects)
+    else:
+        msg='No pending registrations'
+        return render_template('dashboard.html',msg=msg)
+    return render_template('dashboard.html')
+
+@app.route('/accepted/<string:email_id>')
+def accepted(email_id):
+    cur=mysql.connection.cursor()
+    res=cur.execute("UPDATE investor SET status='yes' WHERE email_id='{email_id}' ".format(email_id=email_id))
+    mysql.connection.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/rejected/<string:email_id>')
+def rejected(email_id):
+    cur=mysql.connection.cursor()
+    res=cur.execute("UPDATE investor SET status='invalid' WHERE email_id='{email_id}' ".format(email_id=email_id))
+    mysql.connection.commit()
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/idea_post',methods=['POST','GET'])
 def ideaPost():
     print(request.form)
@@ -40,7 +84,6 @@ def ideaPost():
         description=dict(request.form)['description']
         author=session['name']
         cur_date=str(date.today())
-        upvotes=0
         #create cursor
         cur=mysql.connection.cursor()
         #execute
@@ -59,11 +102,13 @@ class IdeaPostForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     subtitle=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
+
 #problemstatements
 class PSForm(Form):
     title=StringField("title",[validators.Length(min=1)])
     
     description=StringField("description",[validators.Length(min=1)])
+
 @app.route('/postps',methods=['POST','GET'])
 def PS():
     print(request.form)
@@ -90,7 +135,6 @@ def PS():
 
 
 #blogs
-
 @app.route('/blog',methods=['POST','GET'])
 def blogpost():
     print(request.form)
@@ -120,7 +164,6 @@ class BlogPostForm(Form):
     author=StringField("subtitle",[validators.Length(min=1)])
     description=StringField("description",[validators.Length(min=1)])
     time=StringField("time",[validators.Length(min=1)])
-
 
 
 class RegisterRole(Form):
@@ -189,9 +232,10 @@ def investorRegister():
         linkedin=request.form['linkedin']
         company=request.form['company']
         pancard=request.form['pancard']
+        status='no'
         password=sha256_crypt.encrypt(str(request.form['password']))
         cur=mysql.connection.cursor()
-        cur.execute("INSERT INTO investor(first_name,last_name,email_id,mobile_no,linkedin,company,pancard,password) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,mobileno,linkedin,company,pancard,password))
+        cur.execute("INSERT INTO investor(first_name,last_name,email_id,mobile_no,linkedin,company,pancard,password,status) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s)",(firstname,lastname,email,mobileno,linkedin,company,pancard,password,status))
         #commit to DB
         mysql.connection.commit()
         #close connection 
@@ -293,10 +337,15 @@ def login():
                 cur.execute("SELECT * FROM {dbname} WHERE email_id='{emailid}'".format(dbname=role,emailid=email))
                 data=cur.fetchone()
                 session['role']=role
+                if(role=='investor' and data['status']=='no'):
+                    error="Registration not confirmed"
+                    return render_template('login.html',error=error)
+                if(role=='investor' and data['status']=='invalid'):
+                    error="You are not authorized user"
+                    return render_template('login.html',error=error)
                 if(role!='organization'):
                     session['name']=data['first_name']
                 if(role=='organization'):
-
                     session['comp']=data['company']
                 session['title']=''
                 # app.logger.info('PASSWORD MATCHED ')
@@ -336,7 +385,7 @@ def logout():
 @is_logged_in
 def viewIdeas():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT title,subtitle,date FROM idea_post")
+    res=cur.execute("SELECT * FROM idea_post")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewhalfideas.html',projects=projects)
@@ -372,11 +421,10 @@ def viewhalfps():
 def viewps(stmt):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
-    project=cur.fetchone()
-    print(project)
-    print(res)
+    projects=cur.fetchall()
+    print(projects)
     if res>0:
-        return render_template('viewps.html',project=project)
+        return render_template('viewps.html',projects=projects)
     else:
         msg='No Problem Statements  Available'
         return render_template('viewps.html',msg=msg)
@@ -415,26 +463,23 @@ def increase(title):
     res=cur.execute("SELECT upvotes FROM idea_post where title=%s",[title])
     projects=cur.fetchone()
     print(projects)
-    print(projects['upvotes'])
+    count=projects['upvotes']
+    if(count==None):
+        count=0
+    count+=1
+    res=cur.execute("UPDATE idea_post SET upvotes={count} WHERE title='{title}' ".format(count=count,title=title))
+    #commit to DB
+    mysql.connection.commit()
+    #close connection 
+    cur.close()
     if res>0:
         return redirect(url_for('viewIdeas'))
     else:
         msg='No Idea posts Available'
         return redirect(url_for('viewIdeas'))
-#file upload
-
-UPLOAD_FOLDER = 'C:/Users/Admin/Desktop/uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-	
-@app.route('/uploader', methods = ['GET', 'POST'])
-def upload_file():
-   if request.method == 'POST':
 
 
-       f = request.files['file'] 
-       f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
-       return 'File has been uploaded to the location successfully!'
 if __name__=='__main__':
     app.secret_key='1234'
     app.run(debug=True)
+    socketio.run(create_app(debug=True))
