@@ -1,5 +1,5 @@
 from email.headerregistry import Address
-from logging import error
+
 from msilib.schema import File
 from pydoc import Doc, describe
 from turtle import title
@@ -9,7 +9,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-from __init__ import create_app, socketio
+
 
 
 app=Flask(__name__)
@@ -480,6 +480,29 @@ def increase(title):
     else:
         msg='No Idea posts Available'
         return redirect(url_for('viewIdeas'))
+@app.route('/blogcount/<string:title>')
+@is_logged_in
+def increase1(title):
+    cur=mysql.connection.cursor()
+    print(title)
+    session[title]=True
+    res=cur.execute("SELECT likes FROM blogs where title=%s",[title])
+    projects=cur.fetchone()
+    print(projects)
+    count=projects['likes']
+    if(count==None):
+        count=0
+    count+=1
+    res=cur.execute("UPDATE blogs SET likes={count} WHERE title='{title}' ".format(count=count,title=title))
+    #commit to DB
+    mysql.connection.commit()
+    #close connection 
+    cur.close()
+    if res>0:
+        return redirect(url_for('viewblog'))
+    else:
+        msg='No Idea posts Available'
+        return redirect(url_for('viewblog'))
 
 @app.route('/sort')
 def sort():
