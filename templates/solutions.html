@@ -1,0 +1,18 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+    <br><br><section class="solutions"><br><br>
+        {% for project in projects %}
+        <div class="card w-75">
+            <div class="card-body">
+                    <h1 class="card-title">{{project.stmt}}</h1>
+                    <h2 class="card-title">{{project.author}}</h2> 
+                    <a href="'{{project.solution}}'" download>Download solution</a>
+            </div>
+            <br>
+        </div>
+        {% endfor %}
+    </section>
+
+{% endblock %}

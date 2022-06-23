@@ -9,7 +9,7 @@ from flask_mysqldb import MySQL
 from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,SelectField,validators
 from passlib.hash import sha256_crypt
 from functools import wraps
-
+import os
 
 
 app=Flask(__name__)
@@ -410,7 +410,7 @@ def ideaPosts(title):
 @is_logged_in
 def viewhalfps():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT stmt,author FROM ps")
+    res=cur.execute("SELECT * FROM ps")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewhalfps.html',projects=projects)
@@ -423,7 +423,9 @@ def viewhalfps():
 def viewps(stmt):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM ps WHERE stmt=%s",[stmt])
-    projects=cur.fetchall()
+    projects=cur.fetchone()
+    session['psname']=stmt
+    session['company']=projects['author']
     print(projects)
     if res>0:
         return render_template('viewps.html',projects=projects)
@@ -542,7 +544,40 @@ def comment():
     return render_template('viewideas.html',form=form,projects=projects,comments=comments)
 
 
+UPLOAD_FOLDER = 'C:/Users/tejasaswi/Desktop/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/fileupload', methods = ['GET', 'POST'])
+def upload_file():
+    print("fbfbfgf")
+    if request.method == 'POST':
+        f = request.files['uploadedfile']
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], f.filename))
+        path=str(app.config['UPLOAD_FOLDER'])+'/'+str(f.filename)
+        print(path)
+        cur=mysql.connection.cursor()
+        res=cur.execute("UPDATE ps SET solution='{path}' WHERE stmt='{name}' ".format(path=path,name=session['psname']))
+        res=cur.execute("INSERT INTO solutions(stmt,author,solution,org) VALUES(%s,%s,%s,%s)",(session['psname'],session['name'],path,session['company']))
+        res=cur.execute("SELECT * FROM ps")
+        projects=cur.fetchall()
+        mysql.connection.commit() 
+        msg='Solution submitted successfully!'
+        return render_template('viewps.html',msg=msg,projects=projects)
+
+@app.route('/solutions')
+@is_logged_in
+def solutions():
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM solutions")
+    projects=cur.fetchall()
+    
+    print(projects)
+    if res>0:
+        return render_template('solutions.html',projects=projects)
+    else:
+        msg='No solutions Available'
+        return render_template('solutions.html',msg=msg)
+
 if __name__=='__main__':
     app.secret_key='1234'
     app.run(debug=True)
-    socketio.run(create_app(debug=True))

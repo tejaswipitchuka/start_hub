@@ -3,7 +3,7 @@
 {% include 'layout.html' %}
 {% block body %}
     <section class="viewps"><br><br><br>
-        <form method="POST">
+        <form action="/fileupload" method="POST" enctype = "multipart/form-data">
             <div class="card w-75">
                 <div class="card-body">
                     <br><br>
@@ -15,6 +15,12 @@
                     </div>
                 </div>
             </div><br>
+            <div class="mb-3">
+                <label for="deadline" class="form-label">File Upload</label><br>
+                <input type="file" id="file" name="uploadedfile">
+                <!-- <input type="submit" value="Upload"> -->
+            </div><br>
+            <button type="submit" class="btn btn-primary">Submit</button>
         </form>
     </section>
 {% endblock %}
