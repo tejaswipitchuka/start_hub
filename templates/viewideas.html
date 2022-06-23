@@ -2,23 +2,40 @@
 {% include 'includes/_messages.html' %}
 {% include 'layout.html' %}
 {% block body %}
-    <section class="viewideas"><br><br><br>
-        
-        {% for project in projects %}
-        <form method="POST">
+    <section class="viewideas"><br><br>
             <div class="card w-75">
                 <div class="card-body">
                     <br><br>
-                    <h2 class="card-title">{{project.title}}</h2>
-                    <h4 class="card-title">{{project.subtitle}}</h4>
-                    <h4 class="card-title">{{project.date}}</h4>
+                    <h2 class="card-title">{{projects.title}}</h2>
+                    <h4 class="card-title">{{projects.subtitle}}</h4>
+                    <h4 class="card-title">{{projects.date}}</h4>
                     <div style="width: 80%;  "> 
-                        <p class="card-text">{{project.description}}</p>
+                        <p class="card-text">{{projects.description}}</p>
                     </div>
-                        <a href="/increasecount/{{project.title}}" class="btn btn-primary"><i class="fa-solid fa-caret-up"></i> Upvote {{project.upvote}}</a>
+                        <a href="/increasecount/{{projects.title}}" class="btn btn-primary"><i class="fa-solid fa-caret-up"></i> Upvote {{projects.upvote}}</a>
+                        
+                        
                 </div>
             </div><br>
-            {% endfor %}
-        </form>
+            <div class="card w-75">
+                <div class="card-body">
+                    <div class="card-text">Comments</div><br>
+                    {% for c in comments %}
+                        <div>{{ c.author }}</div>
+                        <div>{{ c.comment }}</div>
+                        <hr>
+                    {% endfor %}
+                </div> 
+            </div>
+            <br>
+            <form action="/comments" method="POST">
+                <div class="mb-2">
+                    <label for="exampleFormControlTextarea1" class="comment"></label>
+                    <textarea name="comment" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg">Add comment</button>
+            </form>
+            
+            
     </section>
 {% endblock %}

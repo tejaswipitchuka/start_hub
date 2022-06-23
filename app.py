@@ -398,12 +398,13 @@ def viewIdeas():
 def ideaPosts(title):
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM idea_post WHERE title=%s",[title])
-    projects=cur.fetchall()
-    if res>0:
-        return render_template('viewideas.html',projects=projects)
-    else:
-        msg='No Idea posts Available'
-        return render_template('viewideas.html',msg=msg)
+    projects=cur.fetchone()
+    res=cur.execute("SELECT * FROM comments WHERE title=%s",[title])
+    comments=cur.fetchall()
+    print(comments)
+    session['ptitle']=title
+    return render_template('viewideas.html',projects=projects,comments=comments)
+
 #ps for innovators
 @app.route('/viewhalfps')
 @is_logged_in
@@ -416,6 +417,7 @@ def viewhalfps():
     else:
         msg='No Problem Statements Available'
         return render_template('viewhalfps.html',msg=msg)
+        
 @app.route('/viewhalfps/<string:stmt>')
 @is_logged_in
 def viewps(stmt):
@@ -490,6 +492,32 @@ def sort():
     else:
         msg='No Idea posts Available'
         return render_template('viewhalfideas.html',msg=msg)
+
+class Comment(Form):
+    comment=TextAreaField('comment')
+
+@app.route('/comments',methods=['POST'])
+@is_logged_in
+def comment():
+    form=Comment(request.form)
+    print('in comm*****')
+    cur=mysql.connection.cursor()
+    title=session['ptitle']
+    res=cur.execute("SELECT * FROM idea_post WHERE title=%s",[title])
+    projects=cur.fetchone()
+    res=cur.execute("SELECT * FROM comments WHERE title=%s",[title])
+    comments=cur.fetchall()
+    if request.method=='POST':
+        print('hiii*******')
+        c=request.form['comment']
+        print(c) 
+        print(type(c))      
+        res=cur.execute("INSERT INTO comments(title,author,comment) VALUES(%s,%s,%s)",(session['ptitle'],session['name'],c))
+        mysql.connection.commit()        
+        cur.close()
+        return render_template('viewideas.html',projects=projects,comments=comments)
+    return render_template('viewideas.html',form=form,projects=projects,comments=comments)
+
 
 if __name__=='__main__':
     app.secret_key='1234'
