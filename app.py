@@ -1,8 +1,4 @@
-from email.headerregistry import Address
-
 from msilib.schema import File
-from pydoc import Doc, describe
-from turtle import title
 from flask import Flask, render_template,flash,redirect,url_for,session,logging,request
 from datetime import date
 from flask_mysqldb import MySQL
@@ -10,7 +6,7 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, FileField,S
 from passlib.hash import sha256_crypt
 from functools import wraps
 import os
-
+from twilio.rest import Client
 
 app=Flask(__name__)
 
@@ -32,6 +28,9 @@ def index():
 class Admin(Form):
     username=StringField('username',[validators.Length(min=5)])
     password=PasswordField('password',[validators.Length(min=5)])
+
+
+#https://f2ec-103-2-235-146.ngrok.io/bot
 
 @app.route('/adminlogin',methods=['POST','GET'])
 def admin():
@@ -57,7 +56,6 @@ def dashboard():
     else:
         msg='No pending registrations'
         return render_template('dashboard.html',msg=msg)
-    return render_template('dashboard.html')
 
 @app.route('/accepted/<string:email_id>')
 def accepted(email_id):
@@ -106,7 +104,6 @@ class IdeaPostForm(Form):
 #problemstatements
 class PSForm(Form):
     title=StringField("title",[validators.Length(min=1)])
-    
     description=StringField("description",[validators.Length(min=1)])
 
 @app.route('/postps',methods=['POST','GET'])
@@ -115,7 +112,6 @@ def PS():
     form=PSForm(request.form)
     if request.method=='POST':
         title=form.title.data
-        
         description=dict(request.form)['description']
         author=session['comp']
         cur_date=str(date.today())
@@ -433,8 +429,6 @@ def viewps(stmt):
         msg='No Problem Statements  Available'
         return render_template('viewps.html',msg=msg)
 
-#
-
 @app.route('/viewblog')
 @is_logged_in
 def viewblog():
@@ -482,6 +476,8 @@ def increase(title):
     else:
         msg='No Idea posts Available'
         return redirect(url_for('viewIdeas'))
+
+
 @app.route('/blogcount/<string:title>')
 @is_logged_in
 def increase1(title):
@@ -570,7 +566,6 @@ def solutions():
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM solutions")
     projects=cur.fetchall()
-    
     print(projects)
     if res>0:
         return render_template('solutions.html',projects=projects)
@@ -578,6 +573,25 @@ def solutions():
         msg='No solutions Available'
         return render_template('solutions.html',msg=msg)
 
+@app.route('/sms/<string:name>')
+def sms(name):
+    account_sid = 'AC1c8f2e49cf4e0851203887cdcf744c36'
+    auth_token = '7ce205a03e95f45debdfcba9d655b583'
+    cur=mysql.connection.cursor()
+    res=cur.execute("SELECT * FROM innovator WHERE first_name=%s",[name])
+    projects=cur.fetchone()
+    number='+91'+str(projects['mobile_no'])
+    client = Client(account_sid, auth_token)
+    res=cur.execute("SELECT * FROM investor WHERE first_name=%s",[session['name']])
+    projects=cur.fetchone()
+    body='\nHello there, '+str(session['name'])+' here. I am interested in knowing more about your idea. Lets connect here\n Contact no: '+str(projects['mobile_no'])
+    message = client.messages.create(
+                                from_='+18646607895',
+                                body =body,
+                                to =number
+                            )
+    return 'Message sent successfully!'
+
 if __name__=='__main__':
-    app.secret_key='1234'
+    app.secret_key='123456'
     app.run(debug=True)
