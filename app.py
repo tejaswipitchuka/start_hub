@@ -540,7 +540,7 @@ def comment():
     return render_template('viewideas.html',form=form,projects=projects,comments=comments)
 
 
-UPLOAD_FOLDER = 'C:/Users/tejasaswi/Desktop/uploads'
+UPLOAD_FOLDER = 'C:/Users/Admin/Desktop/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/fileupload', methods = ['GET', 'POST'])
