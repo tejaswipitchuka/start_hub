@@ -433,7 +433,7 @@ def viewps(stmt):
 @is_logged_in
 def viewblog():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT title,date,author FROM blogs")
+    res=cur.execute("SELECT * FROM blogs")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewblog.html',projects=projects)
