@@ -433,7 +433,7 @@ def viewps(stmt):
 @is_logged_in
 def viewblog():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT title,date,author FROM blogs")
+    res=cur.execute("SELECT * FROM blogs")
     projects=cur.fetchall()
     if res>0:
         return render_template('viewblog.html',projects=projects)
@@ -576,11 +576,15 @@ def solutions():
 @app.route('/sms/<string:name>')
 def sms(name):
     account_sid = 'AC1c8f2e49cf4e0851203887cdcf744c36'
-    auth_token = '7ce205a03e95f45debdfcba9d655b583'
+    auth_token = '13f1ca28947f365282e0c0e71f48f598'
+
+
     cur=mysql.connection.cursor()
     res=cur.execute("SELECT * FROM innovator WHERE first_name=%s",[name])
     projects=cur.fetchone()
+    print(projects['mobile_no'])
     number='+91'+str(projects['mobile_no'])
+    print(number)
     client = Client(account_sid, auth_token)
     res=cur.execute("SELECT * FROM investor WHERE first_name=%s",[session['name']])
     projects=cur.fetchone()
