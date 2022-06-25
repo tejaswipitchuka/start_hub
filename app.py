@@ -573,28 +573,57 @@ def solutions():
         msg='No solutions Available'
         return render_template('solutions.html',msg=msg)
 
+
 @app.route('/sms/<string:name>')
+@is_logged_in
 def sms(name):
-    account_sid = 'AC1c8f2e49cf4e0851203887cdcf744c36'
-    auth_token = '13f1ca28947f365282e0c0e71f48f598'
+    if(session['role']=='investor'):
+        account_sid = 'AC1c8f2e49cf4e0851203887cdcf744c36'
+        auth_token = '13f1ca28947f365282e0c0e71f48f598'
+        cur=mysql.connection.cursor()
+        res=cur.execute("SELECT * FROM innovator WHERE first_name=%s",[name])
+        projects=cur.fetchone()
+        number='+91'+str(projects['mobile_no'])
+        client = Client(account_sid, auth_token)
+        res=cur.execute("SELECT * FROM investor WHERE first_name=%s",[session['name']])
+        projects=cur.fetchone()
+        body='\nHello there, '+str(session['name'])+' here. I am interested in knowing more about your idea. Lets connect here\n Contact no: '+str(projects['mobile_no'])
+        message = client.messages.create(
+                                    from_='+18646607895',
+                                    body =body,
+                                    to =number
+                                )
+        return 'Message sent successfully!'
+    elif(session['role']=='innovator'):
+        account_sid = 'AC1c8f2e49cf4e0851203887cdcf744c36'
+        auth_token = '13f1ca28947f365282e0c0e71f48f598'
+        cur=mysql.connection.cursor()
+        res=cur.execute("SELECT * FROM mentor WHERE first_name=%s",[name])
+        projects=cur.fetchone()
+        number='+91'+str(projects['mobile_no'])
+        client = Client(account_sid, auth_token)
+        res=cur.execute("SELECT * FROM investor WHERE first_name=%s",[session['name']])
+        projects=cur.fetchone()
+        body='\nHello there, '+str(session['name'])+' here. Could you please guide me through my project, because I am not sure of certain things. Can you please contact me here\n Contact no: '+str(projects['mobile_no'])
+        message = client.messages.create(
+                                    from_='+18646607895',
+                                    body =body,
+                                    to =number
+                                )
+        return 'Message sent successfully!'
 
-
+@app.route('/viewmentors')
+@is_logged_in
+def mentors():
     cur=mysql.connection.cursor()
-    res=cur.execute("SELECT * FROM innovator WHERE first_name=%s",[name])
-    projects=cur.fetchone()
-    print(projects['mobile_no'])
-    number='+91'+str(projects['mobile_no'])
-    print(number)
-    client = Client(account_sid, auth_token)
-    res=cur.execute("SELECT * FROM investor WHERE first_name=%s",[session['name']])
-    projects=cur.fetchone()
-    body='\nHello there, '+str(session['name'])+' here. I am interested in knowing more about your idea. Lets connect here\n Contact no: '+str(projects['mobile_no'])
-    message = client.messages.create(
-                                from_='+18646607895',
-                                body =body,
-                                to =number
-                            )
-    return 'Message sent successfully!'
+    res=cur.execute("SELECT * FROM mentor")
+    projects=cur.fetchall()
+    print(projects)
+    if res>0:
+        return render_template('viewmentors.html',projects=projects)
+    else:
+        msg='No mentors Available'
+        return render_template('viewmentors.html',msg=msg)
 
 if __name__=='__main__':
     app.secret_key='123456'
