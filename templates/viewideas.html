@@ -18,6 +18,8 @@
                 </div>
               </div>
             </div>
+            {% if session.logged_in %}
+            {% if session['role']=='investor' %}
             <div class="col-sm-3">
               <div class="card">
                 <div class="card-body"><br><br>
@@ -28,6 +30,7 @@
               </div>
             </div>
           </div>
+          {% endif %}
           <br>
             <div class="card w-75">
                 <div class="card-body">
@@ -47,7 +50,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary btn-lg">Add comment</button>
             </form>
-            
+            {% endif %}
             
     </section>
 {% endblock %}

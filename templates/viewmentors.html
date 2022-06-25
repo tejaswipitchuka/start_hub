@@ -1,0 +1,26 @@
+{% include 'includes/_navbar.html' %}
+{% include 'includes/_messages.html' %}
+{% include 'layout.html' %}
+{% block body %}
+<br><br>
+<section class="viewmentors"><br><br>
+    <div class="row">
+        <div class="col-sm-9">
+            {% for project in projects %}
+          <div class="card">
+            <div class="card-body">
+                
+                <br>
+                Name: <h4 class="card-title">{{project.first_name}}</h4>
+                Company: <h5 class="card-title">{{project.company}}</h5>
+                Area of interest: <h5 class="card-title">{{project.specialization}}</h5>
+                <div style="float: right;"><a href="/sms/{{project.first_name}}" class="btn btn-primary">Lets connect</a></div>
+               
+            </div>
+          </div>
+          <br>
+          {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
